@@ -8,6 +8,7 @@ import com.example.demo.repo.RegistrationRepository;
 import com.example.demo.request.RegistrationRequest;
 import com.example.demo.response.RegistrationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -17,6 +18,12 @@ public class RegistrationService {
 
     @Autowired
     RegistrationRepository registrationRepository;
+
+    @Autowired
+    EmailSenderService emailSenderService;
+
+    @Value("${sendMailTo}")
+    private String emailTo;
 
     public WrapperResponse<RegistrationResponse> addRegistration(RegistrationRequest registrationRequest) {
         try{
@@ -37,6 +44,14 @@ public class RegistrationService {
                         .message("User registered successfully.")
                         .success(Boolean.TRUE)
                         .build();
+
+                String subject= "Registration Successful.";
+
+                String body= "Registration Details are- \n "+ registrationRepository.findById(newRegistration.getId());
+
+//                emailSenderService.sendEmail(newRegistration.getEmail(), subject, body);
+
+                emailSenderService.sendEmail(emailTo, subject, body);
 
                 return WrapperResponse.<RegistrationResponse>builder()
                         .data(RegistrationResponse.builder()
@@ -124,6 +139,14 @@ public class RegistrationService {
                         .message("Registration has been deleted successfully.")
                         .success(Boolean.TRUE)
                         .build();
+
+                String subject= "Registration Deleted Successful.";
+
+                String body= "Registration Details are- \n "+ registrationRepository.findById(registration.getId());
+
+//                emailSenderService.sendEmail(registration.getEmail(), subject, body);
+
+                emailSenderService.sendEmail(emailTo, subject, body);
 
                 registrationRepository.deleteById(registration.getId());
 

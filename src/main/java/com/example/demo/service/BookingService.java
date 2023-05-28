@@ -26,6 +26,12 @@ public class BookingService {
     @Autowired
     RegistrationRepository registrationRepository;
 
+    @Autowired
+    EmailSenderService emailSenderService;
+
+    @Value("${sendMailTo}")
+    private String emailTo;
+
     @Value("${parking.capacity}")
     Long parkingCapacity;
 
@@ -71,8 +77,6 @@ public class BookingService {
                         .createdAt(LocalDateTime.now())
                         .build();
 
-
-
                 Status status= Status.builder()
                         .message("Parking Booked Successfully.")
                         .code(StatusCode.SUCCESS.getCode())
@@ -82,6 +86,14 @@ public class BookingService {
                 parkingCapacity=parkingCapacity-1;
 
                 bookingRepository.save(newBooking);
+
+                String subject= "Invoice for Parking Booking.";
+
+                String body= "Parking Details are- \n"+ bookingRepository.findById(newBooking.getId()) +"\nPlease pay the amount";
+
+//                emailSenderService.sendEmail(registration.getEmail(), subject, body);
+
+                emailSenderService.sendEmail(emailTo, subject, body);
 
                 return WrapperResponse.<BookingResponse>builder()
                         .data(BookingResponse.builder()
@@ -127,6 +139,14 @@ public class BookingService {
                         .message("Booking has been deleted successfully.")
                         .success(Boolean.TRUE)
                         .build();
+
+                String subject= "Parking Booking Deleted Successfully.";
+
+                String body= "Parking Details are- \n"+ bookingRepository.findById(booking.getId()) +"\nPlease pay the amount.";
+
+//                emailSenderService.sendEmail(registrationRepository.findByVehicleNumber(vehicleNumber).getEmail(), subject, body);
+
+                emailSenderService.sendEmail(emailTo, subject, body);
 
                 parkingCapacity=parkingCapacity+1;
 
